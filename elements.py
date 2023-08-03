@@ -75,7 +75,7 @@ class EffectivenessCalculator:
         Water is double effective to Fire, and half effective to Water and Grass [2, 0.5, 0.5]
         Grass is half effective to Fire and Grass, and double effective to Water [0.5, 2, 0.5]
         """
-        raise NotImplementedError
+        #raise NotImplementedError
 
     @classmethod
     def get_effectiveness(cls, type1: Element, type2: Element) -> float:

@@ -4,7 +4,10 @@ import abc
 import stats
 from stats import Stats
 
+
 class MonsterBase(abc.ABC):
+
+    original_level = 1
 
     def __init__(self, simple_mode=True, level:int=1) -> None:
         """
@@ -16,8 +19,10 @@ class MonsterBase(abc.ABC):
         """
         self.original_level = level
         self.level = level
+        self.simple_mode = simple_mode
         if simple_mode:
-            self.get_simple_stats()
+            self.hp = self.get_max_hp()
+
 
     def get_level(self):
         """The current level of this monster instance"""
@@ -25,11 +30,14 @@ class MonsterBase(abc.ABC):
 
     def level_up(self):
         """Increase the level of this monster instance by 1"""
+        diff = self.get_max_hp() - self.get_hp()
         self.level += 1
+        self.hp = self.get_max_hp() - diff
+
 
     def get_hp(self):
         """Get the current HP of this monster instance"""
-        return self.hp()
+        return self.hp
 
     def set_hp(self, val):
         """Set the current HP of this monster instance"""
@@ -37,23 +45,23 @@ class MonsterBase(abc.ABC):
 
     def get_attack(self):
         """Get the attack of this monster instance"""
-        return self.attack()
+        return self.get_simple_stats().get_attack()
 
     def get_defense(self):
         """Get the defense of this monster instance"""
-        return self.defense()
+        return self.get_simple_stats().get_defense()
 
     def get_speed(self):
         """Get the speed of this monster instance"""
-        return self.speed()
+        return self.get_simple_stats().get_speed()
 
     def get_max_hp(self):
         """Get the maximum HP of this monster instance"""
-        return self.max_hp()
+        return self.get_simple_stats().get_max_hp()
 
     def alive(self) -> bool:
         """Whether the current monster instance is alive (HP > 0 )"""
-        if self.get_hp() > 0:
+        if self.get_hp > 0:
             return True
         return False
 
@@ -67,7 +75,7 @@ class MonsterBase(abc.ABC):
 
     def get_original_level(self) -> int:
         """Returns the level of the monster when it was just created"""
-        return self.original_level()
+        return self.original_level
 
     def ready_to_evolve(self) -> bool:
         """Whether this monster is ready to evolve. See assignment spec for specific logic."""
@@ -77,7 +85,12 @@ class MonsterBase(abc.ABC):
 
     def evolve(self) -> MonsterBase:
         """Evolve this monster instance by returning a new instance of a monster class."""
-        return self.get_evolution()(True, self.get_level())
+        if self.ready_to_evolve():
+            new_mon = self.get_evolution()(self.simple_mode, self.level)
+            diff = self.get_max_hp() - self.get_hp()
+            new_hp = new_mon.get_max_hp() -diff
+            new_mon.set_hp(new_hp)
+            return new_mon
 
     def __str__(self):
         """Returns string value of the monster"""
