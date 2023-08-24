@@ -48,23 +48,11 @@ class TestBattle(TestCase):
         b.test_class = self
         team1 = MonsterTeam(
             team_mode=MonsterTeam.TeamMode.BACK,
-            selection_mode=MonsterTeam.SelectionMode.PROVIDED,
-            provided_monsters=ArrayR.from_list([
-                Flamikin,
-                Aquariuma,
-                Vineon,
-                Strikeon,
-            ])
+            selection_mode=MonsterTeam.SelectionMode.PROVIDED
         )
         team2 = MonsterTeam(
             team_mode=MonsterTeam.TeamMode.FRONT,
-            selection_mode=MonsterTeam.SelectionMode.PROVIDED,
-            provided_monsters=ArrayR.from_list([
-                Flamikin,
-                Aquariuma,
-                Vineon,
-                Strikeon,
-            ])
+            selection_mode=MonsterTeam.SelectionMode.PROVIDED
         )
         # Make them always attack
         team1.choose_action = lambda out, team: Battle.Action.ATTACK
@@ -104,19 +92,11 @@ class TestBattle(TestCase):
         b.test_class = self
         team1 = MonsterTeam(
             team_mode=MonsterTeam.TeamMode.BACK,
-            selection_mode=MonsterTeam.SelectionMode.PROVIDED,
-            provided_monsters=ArrayR.from_list([
-                Aquariuma,
-                Aquariuma,
-            ])
+            selection_mode=MonsterTeam.SelectionMode.PROVIDED
         )
         team2 = MonsterTeam(
             team_mode=MonsterTeam.TeamMode.FRONT,
-            selection_mode=MonsterTeam.SelectionMode.PROVIDED,
-            provided_monsters=ArrayR.from_list([
-                Aquariuma,
-                Aquariuma,
-            ])
+            selection_mode=MonsterTeam.SelectionMode.PROVIDED
         )
         # Make them always attack
         team1.choose_action = lambda out, team: Battle.Action.ATTACK

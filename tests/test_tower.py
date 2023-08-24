@@ -55,8 +55,7 @@ class TestTower(TestCase):
         bt = BattleTower(Battle(verbosity=0))
         bt.set_my_team(MonsterTeam(
             team_mode=MonsterTeam.TeamMode.BACK,
-            selection_mode=MonsterTeam.SelectionMode.PROVIDED,
-            provided_monsters=ArrayR.from_list([BadFlamikin])
+            selection_mode=MonsterTeam.SelectionMode.PROVIDED
         ))
         # The only random number generated at this point is the lives of our team member
         # We have 4 lives
@@ -103,8 +102,7 @@ class TestTower(TestCase):
         bt = BattleTower(Battle(verbosity=0))
         bt.set_my_team(MonsterTeam(
             team_mode=MonsterTeam.TeamMode.BACK,
-            selection_mode=MonsterTeam.SelectionMode.PROVIDED,
-            provided_monsters=ArrayR.from_list([GoodFlamikin])
+            selection_mode=MonsterTeam.SelectionMode.PROVIDED
         ))
         bt.generate_teams(3)
         # They have lives 7 5 and 3
@@ -142,8 +140,7 @@ class TestTower(TestCase):
         bt = BattleTower(Battle(verbosity=0))
         bt.set_my_team(MonsterTeam(
             team_mode=MonsterTeam.TeamMode.BACK,
-            selection_mode=MonsterTeam.SelectionMode.PROVIDED,
-            provided_monsters=ArrayR.from_list([Faeboa])
+            selection_mode=MonsterTeam.SelectionMode.PROVIDED
         ))
         bt.generate_teams(3)
         # The following teams should have been generated:
@@ -180,8 +177,7 @@ class TestTower(TestCase):
         bt = BattleTower(Battle(verbosity=0))
         bt.set_my_team(MonsterTeam(
             team_mode=MonsterTeam.TeamMode.BACK,
-            selection_mode=MonsterTeam.SelectionMode.PROVIDED,
-            provided_monsters=ArrayR.from_list([GoodFlamikin])
+            selection_mode=MonsterTeam.SelectionMode.PROVIDED
         ))
         bt.generate_teams(6)
         # They have lives 7, 5, 3, 10, 7 and 3.

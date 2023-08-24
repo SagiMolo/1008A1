@@ -25,8 +25,7 @@ class TestTeam(TestCase):
         my_monsters[3] = Thundrake
         team = MonsterTeam(
             team_mode=MonsterTeam.TeamMode.FRONT,
-            selection_mode=MonsterTeam.SelectionMode.PROVIDED,
-            provided_monsters=my_monsters
+            selection_mode=MonsterTeam.SelectionMode.PROVIDED
         )
         thundrake = team.retrieve_from_team()
         vineon = team.retrieve_from_team()
@@ -70,8 +69,7 @@ class TestTeam(TestCase):
         extra = Normake()
         team = MonsterTeam(
             team_mode=MonsterTeam.TeamMode.BACK,
-            selection_mode=MonsterTeam.SelectionMode.PROVIDED,
-            provided_monsters=my_monsters
+            selection_mode=MonsterTeam.SelectionMode.PROVIDED
         )
         flamikin = team.retrieve_from_team()
         aquariuma = team.retrieve_from_team()
@@ -129,8 +127,6 @@ class TestTeam(TestCase):
         team = MonsterTeam(
             team_mode=MonsterTeam.TeamMode.OPTIMISE,
             selection_mode=MonsterTeam.SelectionMode.PROVIDED,
-            sort_key=MonsterTeam.SortMode.HP,
-            provided_monsters=my_monsters,
         )
         # Rockodile, Aquariuma, Flamikin, Thundrake
         rockodile = team.retrieve_from_team()
@@ -188,8 +184,6 @@ class TestTeam(TestCase):
         self.assertRaises(ValueError, lambda: MonsterTeam(
             team_mode=MonsterTeam.TeamMode.OPTIMISE,
             selection_mode=MonsterTeam.SelectionMode.PROVIDED,
-            sort_key=MonsterTeam.SortMode.HP,
-            provided_monsters=my_monsters,
         ))
 
         my_monsters = ArrayR(2)
@@ -199,8 +193,6 @@ class TestTeam(TestCase):
         self.assertRaises(ValueError, lambda: MonsterTeam(
             team_mode=MonsterTeam.TeamMode.OPTIMISE,
             selection_mode=MonsterTeam.SelectionMode.PROVIDED,
-            sort_key=MonsterTeam.SortMode.HP,
-            provided_monsters=my_monsters,
         ))
 
 
