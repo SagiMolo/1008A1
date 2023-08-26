@@ -7,7 +7,6 @@ from team import MonsterTeam
 
 
 class Battle:
-
     class Action(BaseEnum):
         ATTACK = auto()
         SWAP = auto()
@@ -29,7 +28,16 @@ class Battle:
         * remove fainted monsters and retrieve new ones.
         * return the battle result if completed.
         """
-        raise NotImplementedError
+        if self.team1.choose_action(self.team2) == Battle.Action.ATTACK:
+            if self.team2.starting_monsters.get_defense() < self.team1.starting_monsters.get_attack() / 2:
+                damage = self.team1.starting_monsters.get_attack() - self.team2.starting_monsters.get_defense()
+                self.team2.starting_monsters.get_hp() - damage
+            elif self.team2.starting_monsters.get_defense() < self.team1.starting_monsters.get_attack():
+                damage = self.team1.starting_monsters.get_attack() * 5 / 8 - self.team2.starting_monsters.get_defense() - 4
+                self.team2.starting_monsters.get_hp() - damage
+            else:
+                damage = self.team1.starting_monsters.get_attack() / 4
+                self.team2.starting_monsters.get_hp() - damage
 
     def battle(self, team1: MonsterTeam, team2: MonsterTeam) -> Battle.Result:
         if self.verbosity > 0:
@@ -45,6 +53,7 @@ class Battle:
             result = self.process_turn()
         # Add any postgame logic here.
         return result
+
 
 if __name__ == "__main__":
     t1 = MonsterTeam(MonsterTeam.TeamMode.BACK, MonsterTeam.SelectionMode.RANDOM)

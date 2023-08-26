@@ -45,6 +45,11 @@ class MonsterTeam:
     def __init__(self, team_mode: TeamMode, selection_mode, **kwargs) -> None:
         # Add any pre-init logic here.
         self.team_mode = team_mode
+
+        self.ascen = False
+
+        self.starting_monsters = ArrayR(self.TEAM_LIMIT)
+
         try:
             self.sort_mode = kwargs["sort_key"]
         except:
@@ -81,18 +86,24 @@ class MonsterTeam:
         elif self.team_mode == MonsterTeam.TeamMode.BACK:
             self.team.append(monster)
         else:
+            mon_to_add = None
             if not isinstance(monster, ListItem):
                 if self.sort_mode == MonsterTeam.SortMode.HP:
-                    monster = ListItem(monster, monster.get_hp())
+                    mon_to_add = ListItem(monster, monster.get_hp())
                 elif self.sort_mode == MonsterTeam.SortMode.ATTACK:
-                    monster = ListItem(monster, monster.get_attack())
+                    mon_to_add = ListItem(monster, monster.get_attack())
                 elif self.sort_mode == MonsterTeam.SortMode.DEFENSE:
-                    monster = ListItem(monster, monster.get_defense())
+                    mon_to_add = ListItem(monster, monster.get_defense())
                 elif self.sort_mode == MonsterTeam.SortMode.HP.SPEED:
-                    monster = ListItem(monster, monster.get_speed())
+                    mon_to_add = ListItem(monster, monster.get_speed())
                 else:
-                    monster = ListItem(monster, monster.get_level())
-            self.team.add(monster)
+                    mon_to_add = ListItem(monster, monster.get_level())
+                mon_to_add.key = mon_to_add.key * -1
+                if self.ascen:
+                    mon_to_add.key = mon_to_add.key *-1
+                self.team.add(mon_to_add)
+            else:
+                self.team.add(monster)
 
     def retrieve_from_team(self) -> MonsterBase:
         if self.team_mode == MonsterTeam.TeamMode.FRONT:
@@ -100,24 +111,31 @@ class MonsterTeam:
         elif self.team_mode == MonsterTeam.TeamMode.BACK:
             return self.team.serve()
         else:
-            ret = self.team[0]
+            ret = self.team[0].value
             self.team.delete_at_index(0)
             return ret
 
     def special(self) -> None:
         if self.team_mode == MonsterTeam.TeamMode.FRONT:
-            temp_stack = ArrayStack(self.TEAM_LIMIT)
-            new_stack = ArrayStack(self.TEAM_LIMIT)
-            while len(self.team) > 3:
-                temp_stack.push(self.team.pop())
-            while not self.team.is_empty():
-                new_stack.push(self.team.pop())
-            while not temp_stack.is_empty():
-                new_stack.push(temp_stack.pop())
-            self.team = new_stack
+            s1 = ArrayStack(self.TEAM_LIMIT)
+            s2 = ArrayStack(self.TEAM_LIMIT)
+            if len(self.team) >= 3:
+                while len(self.team) > 0:
+                    s1.push(self.retrieve_from_team())
+                while len(s1) > 3:
+                    s2.push(s1.pop())
+                while len(s1) > 1:
+                    self.add_to_team(s1.pop())
+                s2.push(s1.pop())
+                while len(self.team) > 0:
+                    s2.push(self.retrieve_from_team())
+            else:
+                while len(self.team) > 0:
+                    s2.push(self.retrieve_from_team())
+            self.team = s2
+
         elif self.team_mode == MonsterTeam.TeamMode.BACK:
             mid_point = math.ceil((len(self.team) / 2))
-            print(mid_point, len(self.team))
             temp_stack = ArrayStack(self.TEAM_LIMIT)
             temp_queue = CircularQueue(self.TEAM_LIMIT)
             while len(self.team) > mid_point:
@@ -130,15 +148,25 @@ class MonsterTeam:
                 self.team.append(temp_queue.serve())
         else:
             reordered = ArrayStack(self.TEAM_LIMIT)
-            for i in range(len(self.team)):
-                mon = self.retrieve_from_team()
+            while len(self.team) > 0:
+                mon = self.team[0]
                 mon.key = mon.key * -1
-                reordered.append(mon)
+                reordered.push(mon)
+                self.team.delete_at_index(0)
             while reordered.length > 0:
                 self.add_to_team(reordered.pop())
+            if self.ascen:
+                self.ascen = False
+            else:
+                self.ascen = True
 
     def regenerate_team(self) -> None:
-        raise NotImplementedError
+        self.team.clear()
+        self.ascen = False
+        for i in range(len(self.starting_monsters)):
+            if self.starting_monsters[i] is not None:
+                self.starting_monsters[i].set_hp(self.starting_monsters[i].get_max_hp())
+                self.add_to_team(self.starting_monsters[i])
 
     def select_randomly(self, **kwargs):
         team_size = RandomGen.randint(1, self.TEAM_LIMIT)
@@ -157,6 +185,7 @@ class MonsterTeam:
                     if cur_index == spawner_index:
                         # Spawn this monster
                         self.add_to_team(monsters[x]())
+                        self.starting_monsters[_] = monsters[x]()
                         break
             else:
                 raise ValueError("Spawning logic failed.")
@@ -297,6 +326,7 @@ class MonsterTeam:
                     print("Selected monster can't be spawned, please select another")
                     new_mon = None
             self.add_to_team(monster_list[new_mon]())
+            self.starting_monsters[i] = monster_list[new_mon]()
 
     def select_provided(self, provided_monsters: Optional[ArrayR[type[MonsterBase]]] = None):
         """
@@ -311,14 +341,15 @@ class MonsterTeam:
         Example team if in TeamMode.FRONT:
         [Gustwing Instance, Aquariuma Instance, Flamikin Instance]
         """
-        if provided_monsters is None:
+        if self.provided_monsters is None or len(self.provided_monsters) > 6 or len(self.provided_monsters) < 1:
             raise ValueError
-        if self.team_mode == MonsterTeam.TeamMode.FRONT:
-            for i in reversed(range(len(provided_monsters))):
-                self.add_to_team(provided_monsters[i])
-        else:
-            for i in range(len(provided_monsters)):
-                self.add_to_team(provided_monsters[i])
+        for i in range(len(self.provided_monsters)):
+            monster = self.provided_monsters[i]()
+            if monster.can_be_spawned():
+                self.add_to_team(monster)
+                self.starting_monsters[i] = monster
+            else:
+                raise ValueError
 
     def choose_action(self, currently_out: MonsterBase, enemy: MonsterBase) -> Battle.Action:
         # This is just a placeholder function that doesn't matter much for testing.
@@ -334,6 +365,11 @@ if __name__ == "__main__":
         selection_mode=MonsterTeam.SelectionMode.MANUAL,
         sort_key=MonsterTeam.SortMode.HP,
     )
-    print(team)
-    team.special()
-    print(team)
+    while team:
+        print(team.retrieve_from_team())
+    team.regenerate_team()
+    mon = team.retrieve_from_team()
+    mon.set_hp(2)
+    team.regenerate_team()
+    while team:
+        print(team.retrieve_from_team())

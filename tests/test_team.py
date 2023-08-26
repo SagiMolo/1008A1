@@ -12,6 +12,7 @@ from helpers import Flamikin, Aquariuma, Vineon, Normake, Thundrake, Rockodile, 
 
 from data_structures.referential_array import ArrayR
 
+
 class TestTeam(TestCase):
 
     @number("3.1")
@@ -25,7 +26,8 @@ class TestTeam(TestCase):
         my_monsters[3] = Thundrake
         team = MonsterTeam(
             team_mode=MonsterTeam.TeamMode.FRONT,
-            selection_mode=MonsterTeam.SelectionMode.PROVIDED
+            selection_mode=MonsterTeam.SelectionMode.PROVIDED,
+            provided_monsters=my_monsters
         )
         thundrake = team.retrieve_from_team()
         vineon = team.retrieve_from_team()
@@ -69,7 +71,8 @@ class TestTeam(TestCase):
         extra = Normake()
         team = MonsterTeam(
             team_mode=MonsterTeam.TeamMode.BACK,
-            selection_mode=MonsterTeam.SelectionMode.PROVIDED
+            selection_mode=MonsterTeam.SelectionMode.PROVIDED,
+            provided_monsters=my_monsters
         )
         flamikin = team.retrieve_from_team()
         aquariuma = team.retrieve_from_team()
@@ -119,14 +122,20 @@ class TestTeam(TestCase):
     @visibility(visibility.VISIBILITY_SHOW)
     @timeout()
     def test_optimise_mode(self):
+        class WeakThundrake(Thundrake):
+            def get_max_hp(self):
+                return 5
+
         my_monsters = ArrayR(4)
-        my_monsters[0] = Flamikin   # 6 HP
+        my_monsters[0] = Flamikin  # 6 HP
         my_monsters[1] = Aquariuma  # 8 HP
         my_monsters[2] = Rockodile  # 9 HP
-        my_monsters[3] = Thundrake  # 5 HP
+        my_monsters[3] = WeakThundrake  # 5 HP
         team = MonsterTeam(
             team_mode=MonsterTeam.TeamMode.OPTIMISE,
             selection_mode=MonsterTeam.SelectionMode.PROVIDED,
+            sort_key=MonsterTeam.SortMode.HP,
+            provided_monsters=my_monsters,
         )
         # Rockodile, Aquariuma, Flamikin, Thundrake
         rockodile = team.retrieve_from_team()
@@ -150,7 +159,6 @@ class TestTeam(TestCase):
         self.assertIsInstance(rockodile, Rockodile)
         self.assertIsInstance(flamikin, Flamikin)
 
-
         flamikin.set_hp(1)
         team.add_to_team(flamikin)
         team.add_to_team(rockodile)
@@ -166,7 +174,6 @@ class TestTeam(TestCase):
         self.assertIsInstance(aquariuma, Aquariuma)
         self.assertEqual(rockodile.get_hp(), 9)
         self.assertEqual(aquariuma.get_hp(), 8)
-
 
     @number("3.4")
     @visibility(visibility.VISIBILITY_SHOW)
@@ -184,6 +191,8 @@ class TestTeam(TestCase):
         self.assertRaises(ValueError, lambda: MonsterTeam(
             team_mode=MonsterTeam.TeamMode.OPTIMISE,
             selection_mode=MonsterTeam.SelectionMode.PROVIDED,
+            sort_key=MonsterTeam.SortMode.HP,
+            provided_monsters=my_monsters,
         ))
 
         my_monsters = ArrayR(2)
@@ -193,8 +202,9 @@ class TestTeam(TestCase):
         self.assertRaises(ValueError, lambda: MonsterTeam(
             team_mode=MonsterTeam.TeamMode.OPTIMISE,
             selection_mode=MonsterTeam.SelectionMode.PROVIDED,
+            sort_key=MonsterTeam.SortMode.HP,
+            provided_monsters=my_monsters,
         ))
-
 
     @number("3.5")
     @visibility(visibility.VISIBILITY_SHOW)
