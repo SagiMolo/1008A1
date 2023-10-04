@@ -44,6 +44,8 @@ class MonsterTeam:
 
     def __init__(self, team_mode: TeamMode, selection_mode, **kwargs) -> None:
         # Add any pre-init logic here.
+
+        # O(1)
         self.team_mode = team_mode
 
         self.ascen = False
@@ -81,6 +83,7 @@ class MonsterTeam:
         return len(self.team)
 
     def add_to_team(self, monster: MonsterBase):
+        # O(1)
         if self.team_mode == MonsterTeam.TeamMode.FRONT:
             self.team.push(monster)
         elif self.team_mode == MonsterTeam.TeamMode.BACK:
@@ -106,6 +109,7 @@ class MonsterTeam:
                 self.team.add(monster)
 
     def retrieve_from_team(self) -> MonsterBase:
+        # O(1)
         if self.team_mode == MonsterTeam.TeamMode.FRONT:
             return self.team.pop()
         elif self.team_mode == MonsterTeam.TeamMode.BACK:
@@ -116,7 +120,10 @@ class MonsterTeam:
             return ret
 
     def special(self) -> None:
+        # n = length of team
+        # O(n)
         if self.team_mode == MonsterTeam.TeamMode.FRONT:
+            # O(n)
             s1 = ArrayStack(self.TEAM_LIMIT)
             s2 = ArrayStack(self.TEAM_LIMIT)
             if len(self.team) >= 3:
@@ -135,6 +142,7 @@ class MonsterTeam:
             self.team = s2
 
         elif self.team_mode == MonsterTeam.TeamMode.BACK:
+            # O(n)
             mid_point = math.ceil((len(self.team) / 2))
             temp_stack = ArrayStack(self.TEAM_LIMIT)
             temp_queue = CircularQueue(self.TEAM_LIMIT)
@@ -147,6 +155,7 @@ class MonsterTeam:
             while not temp_queue.is_empty():
                 self.team.append(temp_queue.serve())
         else:
+            # O(n)
             reordered = ArrayStack(self.TEAM_LIMIT)
             while len(self.team) > 0:
                 mon = self.team[0]
@@ -161,6 +170,8 @@ class MonsterTeam:
                 self.ascen = True
 
     def regenerate_team(self) -> None:
+        # n = length of original team
+        # O(n)
         self.team.clear()
         self.ascen = False
         for i in range(len(self.starting_monsters)):
@@ -169,6 +180,9 @@ class MonsterTeam:
                 self.add_to_team(self.starting_monsters[i])
 
     def select_randomly(self, **kwargs):
+        # n = total number of monster in the game
+        # m = size of team
+        # O(n + n*m)
         team_size = RandomGen.randint(1, self.TEAM_LIMIT)
         monsters = get_all_monsters()
         n_spawnable = 0
@@ -295,7 +309,9 @@ class MonsterTeam:
         This monster cannot be spawned.
         Which monster are you spawning? 1
         """
-
+        # n = all monsters in the game
+        # m = size of team
+        # O(n + m)
         team_size = None
 
         while not isinstance(team_size, int):
@@ -341,6 +357,9 @@ class MonsterTeam:
         Example team if in TeamMode.FRONT:
         [Gustwing Instance, Aquariuma Instance, Flamikin Instance]
         """
+        # n = length of the provided monster array
+        # O(n)
+
         if self.provided_monsters is None or len(self.provided_monsters) > 6 or len(self.provided_monsters) < 1:
             raise ValueError
         for i in range(len(self.provided_monsters)):
@@ -353,6 +372,10 @@ class MonsterTeam:
 
     def choose_action(self, currently_out: MonsterBase, enemy: MonsterBase) -> Battle.Action:
         # This is just a placeholder function that doesn't matter much for testing.
+
+        # n = complexity of import function
+        # O(n)
+
         from battle import Battle
         if currently_out.get_speed() >= enemy.get_speed() or currently_out.get_hp() >= enemy.get_hp():
             return Battle.Action.ATTACK

@@ -28,16 +28,74 @@ class Battle:
         * remove fainted monsters and retrieve new ones.
         * return the battle result if completed.
         """
-        if self.team1.choose_action(self.team2) == Battle.Action.ATTACK:
-            if self.team2.starting_monsters.get_defense() < self.team1.starting_monsters.get_attack() / 2:
-                damage = self.team1.starting_monsters.get_attack() - self.team2.starting_monsters.get_defense()
-                self.team2.starting_monsters.get_hp() - damage
-            elif self.team2.starting_monsters.get_defense() < self.team1.starting_monsters.get_attack():
-                damage = self.team1.starting_monsters.get_attack() * 5 / 8 - self.team2.starting_monsters.get_defense() - 4
-                self.team2.starting_monsters.get_hp() - damage
+        action1 = self.team1.choose_action(self.out1, self.out2)
+        action2 = self.team2.choose_action(self.out2, self.out1)
+        if action1 == Battle.Action.SWAP:
+            self.team1.add_to_team(self.out1)
+            self.out1 = self.team1.retrieve_from_team()
+        elif action1 == Battle.Action.SPECIAL:
+            self.team1.add_to_team(self.out1)
+            self.team1.special()
+            self.out1 = self.team1.retrieve_from_team()
+        elif action2 == Battle.Action.SWAP:
+            self.team2.add_to_team(self.out2)
+            self.out2 = self.team2.retrieve_from_team()
+        elif action2 == Battle.Action.SPECIAL:
+            self.team2.add_to_team(self.out2)
+            self.team2.special()
+            self.out2 = self.team2.retrieve_from_team()
+
+        if action1 == Battle.Action.ATTACK and action2 == Battle.Action.ATTACK:
+            if self.out1.get_speed() > self.out2.get_speed():
+                dmg = self.calc_damage(self.out1, self.out2)
+                self.out2.set_hp(self.out2.get_hp() - dmg)
+                if self.out2.get_hp() <= 0:
+                    if len(self.team2) <= 0:
+                        return Battle.Result.TEAM1
+                    else:
+                        self.out2 = self.team2.retrieve_from_team()
+            elif self.out1.get_speed() < self.out2.get_speed():
+                dmg = self.calc_damage(self.out2, self.out1)
+                self.out1.set_hp(self.out1.get_hp() - dmg)
+                if self.out1.get_hp() <= 0:
+                    if len(self.team1) <= 0:
+                        return Battle.Result.TEAM2
+                    else:
+                        self.out1 = self.team1.retrieve_from_team()
             else:
-                damage = self.team1.starting_monsters.get_attack() / 4
-                self.team2.starting_monsters.get_hp() - damage
+                dmg = self.calc_damage(self.out1, self.out2)
+                self.out2.set_hp(self.out2.get_hp() - dmg)
+                dmg = self.calc_damage(self.out2, self.out1)
+                self.out1.set_hp(self.out1.get_hp() - dmg)
+                if self.out2.get_hp() <= 0 and self.out1.get_hp() <= 0:
+                    if len(self.team1) <= 0 and len(self.team2) <= 0:
+                        return Battle.Result.DRAW
+                    elif len(self.team1) <= 0:
+                        return Battle.Result.TEAM2
+                    elif len(self.team2) <= 0:
+                        return Battle.Result.TEAM1
+                    else:
+                        self.out1 = self.team1.retrieve_from_team()
+                        self.out2 = self.team2.retrieve_from_team()
+                elif self.out2.get_hp() <= 0:
+                    if len(self.team2) <= 0:
+                        return Battle.Result.TEAM1
+                    else:
+                        self.out2 = self.team2.retrieve_from_team()
+                elif self.out1.get_hp() <= 0:
+                    if len(self.team1) <= 0:
+                        return Battle.Result.TEAM2
+                    else:
+                        self.out1 = self.team1.retrieve_from_team()
+
+    def calc_damage(self, attacker, defender) -> float:
+        if attacker.get_attack() / 2 > defender.get_defense():
+            dmg = attacker.get_attack() - defender.get_defense()
+        elif self.out1.get_attack() > self.out2.get_defense():
+            dmg = (attacker.get_attack() * 5 / 8) - (defender.get_defense() / 4)
+        else:
+            dmg = attacker.get_attack() / 4
+        return dmg
 
     def battle(self, team1: MonsterTeam, team2: MonsterTeam) -> Battle.Result:
         if self.verbosity > 0:

@@ -86,6 +86,7 @@ class EffectivenessCalculator:
 
         Example: EffectivenessCalculator.get_effectiveness(Element.FIRE, Element.WATER) == 0.5
         """
+        # O(n)
         elements = cls.instance.element_names
         effectiveness = cls.instance.effectiveness_values
         elem = None
